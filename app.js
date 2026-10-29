@@ -360,8 +360,14 @@ class MangalaGame {
     this.btnRestart = document.getElementById('btn-restart');
     this.btnSound = document.getElementById('btn-sound');
     this.soundIcon = document.getElementById('sound-icon');
+    this.btnFullscreen = document.getElementById('btn-fullscreen');
+    this.fsIcon = document.getElementById('fs-icon');
     this.btnHint = document.getElementById('btn-hint');
     this.btnClearLog = document.getElementById('btn-clear-log');
+
+    // Mobile orientation overlay
+    this.orientationOverlay = document.getElementById('orientation-overlay');
+    this.btnDismissOrientation = document.getElementById('btn-dismiss-orientation');
 
     // Modal buttons
     this.btnCloseRules = document.getElementById('btn-close-rules');
@@ -390,6 +396,52 @@ class MangalaGame {
       this.sound.enabled = !this.sound.enabled;
       this.soundIcon.textContent = this.sound.enabled ? '🔊' : '🔇';
       if (this.sound.enabled) this.sound.playClick();
+    });
+
+    // Fullscreen toggle
+    if (this.btnFullscreen) {
+      this.btnFullscreen.addEventListener('click', () => {
+        this.sound.playClick();
+        if (!document.fullscreenElement) {
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen();
+          }
+          if (this.fsIcon) this.fsIcon.textContent = '✕';
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+          if (this.fsIcon) this.fsIcon.textContent = '⛶';
+        }
+      });
+
+      const onFsChange = () => {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        if (this.fsIcon) this.fsIcon.textContent = isFs ? '✕' : '⛶';
+      };
+      document.addEventListener('fullscreenchange', onFsChange);
+      document.addEventListener('webkitfullscreenchange', onFsChange);
+    }
+
+    // Dismiss orientation advisory
+    if (this.btnDismissOrientation) {
+      this.btnDismissOrientation.addEventListener('click', () => {
+        this.sound.playClick();
+        if (this.orientationOverlay) {
+          this.orientationOverlay.classList.add('dismissed');
+        }
+      });
+    }
+
+    // When screen orientation changes to landscape, remove dismissed so it can guide again if needed
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > window.innerHeight && this.orientationOverlay) {
+        this.orientationOverlay.classList.remove('dismissed');
+      }
     });
 
     // Reset / Restart
