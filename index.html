@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Türk Mangalası - Oyun & İnteraktif Öğretici</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="main-header">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <span>🏺</span>
+        </div>
+        <div>
+          <h1 class="logo-title">MANGALA</h1>
+          <p class="logo-subtitle">Kadim Türk Zeka & Strateji Oyunu</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button id="tab-play" class="nav-tab active" data-mode="play">
+          <span class="tab-icon">⚔️</span>
+          <span>Bilgisayara Karşı Oyna</span>
+        </button>
+        <button id="tab-tutorial" class="nav-tab" data-mode="tutorial">
+          <span class="tab-icon">🎓</span>
+          <span>Öğretici & Senaryolar</span>
+          <span class="badge">6 Ders</span>
+        </button>
+        <button id="tab-rules" class="nav-tab" data-mode="rules">
+          <span class="tab-icon">📜</span>
+          <span>Kurallar & Tarihçe</span>
+        </button>
+      </nav>
+
+      <!-- Global Actions -->
+      <div class="header-actions">
+        <button id="btn-sound" class="btn-icon" title="Ses Aç/Kapat">
+          <span id="sound-icon">🔊</span>
+        </button>
+        <button id="btn-restart" class="btn-secondary" title="Yeniden Başlat">
+          <span>🔄 Yeni Oyun</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content Sections -->
+    <main class="main-content">
+      
+      <!-- Tutorial Header Banner (visible in tutorial mode) -->
+      <section id="tutorial-panel" class="tutorial-panel hidden">
+        <div class="tutorial-progress-bar-container">
+          <div class="tutorial-steps-nav" id="tutorial-steps-nav">
+            <!-- Dynamically populated step buttons -->
+          </div>
+        </div>
+        <div class="tutorial-card">
+          <div class="tutorial-card-left">
+            <span class="tutorial-badge" id="tut-badge">Ders 1 / 6</span>
+            <h2 class="tutorial-title" id="tut-title">Temel Taş Dağıtımı</h2>
+            <p class="tutorial-desc" id="tut-desc">Açıklama yükleniyor...</p>
+            <div class="tutorial-target" id="tut-target">
+              <strong>Hedef:</strong> <span>Hedef talimatı</span>
+            </div>
+          </div>
+          <div class="tutorial-card-right">
+            <div class="tut-feedback" id="tut-feedback">
+              <span class="feedback-icon">💡</span>
+              <span class="feedback-text" id="tut-feedback-text">Kuralı test etmek için vurgulanan kuyuya tıkla!</span>
+            </div>
+            <div class="tut-buttons">
+              <button id="btn-tut-reset" class="btn-small btn-secondary">Tekrar Dene</button>
+              <button id="btn-tut-prev" class="btn-small btn-secondary" disabled>← Önceki</button>
+              <button id="btn-tut-next" class="btn-small btn-primary">Sonraki Ders →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Play Mode Controls & Status (visible in play mode) -->
+      <section id="play-panel" class="play-panel">
+        <div class="play-dashboard">
+          <div class="player-card player-p2" id="card-p2">
+            <div class="player-avatar">🤖</div>
+            <div class="player-info">
+              <div class="player-name">Bilgisayar (Rakip)</div>
+              <div class="player-score"><span id="p2-score-val">0</span> Taş</div>
+            </div>
+            <div class="difficulty-select-wrap">
+              <label for="ai-difficulty">Zorluk:</label>
+              <select id="ai-difficulty">
+                <option value="easy">Kolay (Acemi)</option>
+                <option value="medium" selected>Orta (Taktiksel)</option>
+                <option value="hard">Usta (Strateji)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="turn-announcer" id="turn-announcer">
+            <div class="turn-indicator-light" id="turn-light"></div>
+            <div class="turn-text" id="turn-text">Sıra Sizde! Hamle yapmak için kendi kuyularınızdan (1-6) birini seçin.</div>
+          </div>
+
+          <div class="player-card player-p1 active-card" id="card-p1">
+            <div class="player-avatar">👤</div>
+            <div class="player-info">
+              <div class="player-name">Siz (Oyuncu 1)</div>
+              <div class="player-score"><span id="p1-score-val">0</span> Taş</div>
+            </div>
+            <button id="btn-hint" class="btn-small btn-outline" title="En iyi hamle için ipucu al">
+              💡 İpucu
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mangala Board Arena -->
+      <div class="board-wrapper">
+        <div class="board-frame">
+          <div class="board-wood">
+            <!-- Left Store (Player 2 / AI Hazine) -->
+            <div class="store-pit-container store-p2" id="store-container-p2">
+              <div class="store-label">
+                <span class="store-flag">Doğu Hazinesi</span>
+                <span class="store-owner">Rakip (AI)</span>
+              </div>
+              <div class="store-pit" id="pit-store-p2" data-pit-index="13">
+                <div class="stone-cluster" id="cluster-store-p2"></div>
+                <div class="pit-badge" id="count-store-p2">0</div>
+              </div>
+            </div>
+
+            <!-- Central Pits Area (2 Rows of 6 pits) -->
+            <div class="pits-area">
+              <!-- Top Row: Opponent Pits (index 12 down to 7, viewed left to right: 12, 11, 10, 9, 8, 7) -->
+              <div class="pits-row row-opponent" id="row-opponent">
+                <div class="row-indicator opponent-indicator">Rakip Bölgesi (Kuyular 12 - 7)</div>
+                <div class="pits-grid">
+                  <!-- Pit 12 (Opponent 6) -->
+                  <div class="pit pit-opponent" id="pit-12" data-pit-index="12">
+                    <span class="pit-number">12</span>
+                    <div class="stone-cluster" id="cluster-12"></div>
+                    <span class="pit-count" id="count-12">4</span>
+                  </div>
+                  <!-- Pit 11 (Opponent 5) -->
+                  <div class="pit pit-opponent" id="pit-11" data-pit-index="11">
+                    <span class="pit-number">11</span>
+                    <div class="stone-cluster" id="cluster-11"></div>
+                    <span class="pit-count" id="count-11">4</span>
+                  </div>
+                  <!-- Pit 10 (Opponent 4) -->
+                  <div class="pit pit-opponent" id="pit-10" data-pit-index="10">
+                    <span class="pit-number">10</span>
+                    <div class="stone-cluster" id="cluster-10"></div>
+                    <span class="pit-count" id="count-10">4</span>
+                  </div>
+                  <!-- Pit 9 (Opponent 3) -->
+                  <div class="pit pit-opponent" id="pit-9" data-pit-index="9">
+                    <span class="pit-number">9</span>
+                    <div class="stone-cluster" id="cluster-9"></div>
+                    <span class="pit-count" id="count-9">4</span>
+                  </div>
+                  <!-- Pit 8 (Opponent 2) -->
+                  <div class="pit pit-opponent" id="pit-8" data-pit-index="8">
+                    <span class="pit-number">8</span>
+                    <div class="stone-cluster" id="cluster-8"></div>
+                    <span class="pit-count" id="count-8">4</span>
+                  </div>
+                  <!-- Pit 7 (Opponent 1) -->
+                  <div class="pit pit-opponent" id="pit-7" data-pit-index="7">
+                    <span class="pit-number">7</span>
+                    <div class="stone-cluster" id="cluster-7"></div>
+                    <span class="pit-count" id="count-7">4</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Direction Flow Indicators -->
+              <div class="board-divider">
+                <div class="direction-guide left">
+                  <span>← Rakip Dağıtım Yönü</span>
+                </div>
+                <div class="board-emblem">MANGALA</div>
+                <div class="direction-guide right">
+                  <span>Sizin Dağıtım Yönünüz →</span>
+                </div>
+              </div>
+
+              <!-- Bottom Row: Player Pits (index 0 to 5, viewed left to right: 0, 1, 2, 3, 4, 5) -->
+              <div class="pits-row row-player" id="row-player">
+                <div class="pits-grid">
+                  <!-- Pit 0 (Player 1) -->
+                  <div class="pit pit-player" id="pit-0" data-pit-index="0">
+                    <span class="pit-number">1</span>
+                    <div class="stone-cluster" id="cluster-0"></div>
+                    <span class="pit-count" id="count-0">4</span>
+                  </div>
+                  <!-- Pit 1 (Player 2) -->
+                  <div class="pit pit-player" id="pit-1" data-pit-index="1">
+                    <span class="pit-number">2</span>
+                    <div class="stone-cluster" id="cluster-1"></div>
+                    <span class="pit-count" id="count-1">4</span>
+                  </div>
+                  <!-- Pit 2 (Player 3) -->
+                  <div class="pit pit-player" id="pit-2" data-pit-index="2">
+                    <span class="pit-number">3</span>
+                    <div class="stone-cluster" id="cluster-2"></div>
+                    <span class="pit-count" id="count-2">4</span>
+                  </div>
+                  <!-- Pit 3 (Player 4) -->
+                  <div class="pit pit-player" id="pit-3" data-pit-index="3">
+                    <span class="pit-number">4</span>
+                    <div class="stone-cluster" id="cluster-3"></div>
+                    <span class="pit-count" id="count-3">4</span>
+                  </div>
+                  <!-- Pit 4 (Player 5) -->
+                  <div class="pit pit-player" id="pit-4" data-pit-index="4">
+                    <span class="pit-number">5</span>
+                    <div class="stone-cluster" id="cluster-4"></div>
+                    <span class="pit-count" id="count-4">4</span>
+                  </div>
+                  <!-- Pit 5 (Player 6) -->
+                  <div class="pit pit-player" id="pit-5" data-pit-index="5">
+                    <span class="pit-number">6</span>
+                    <div class="stone-cluster" id="cluster-5"></div>
+                    <span class="pit-count" id="count-5">4</span>
+                  </div>
+                </div>
+                <div class="row-indicator player-indicator">Sizin Bölgeniz (Kuyular 1 - 6)</div>
+              </div>
+            </div>
+
+            <!-- Right Store (Player 1 Hazine) -->
+            <div class="store-pit-container store-p1" id="store-container-p1">
+              <div class="store-label">
+                <span class="store-flag">Batı Hazinesi</span>
+                <span class="store-owner">Sizin Hazineniz</span>
+              </div>
+              <div class="store-pit" id="pit-store-p1" data-pit-index="6">
+                <div class="stone-cluster" id="cluster-store-p1"></div>
+                <div class="pit-badge" id="count-store-p1">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Log & Live Commentary -->
+      <section class="live-action-box">
+        <div class="live-action-header">
+          <span class="pulse-dot"></span>
+          <h3>Hamle & Olay Günlüğü</h3>
+          <button id="btn-clear-log" class="btn-text">Temizle</button>
+        </div>
+        <div class="log-stream" id="log-stream">
+          <div class="log-entry system">Oyuna hoş geldiniz! Mangala tahtasında 48 taş yerleştirildi. İyi oyunlar!</div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modal for Rules & History -->
+    <div id="modal-rules" class="modal-backdrop hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h2>📜 Türk Mangalası: Kurallar ve Semboller</h2>
+          <button class="modal-close" id="btn-close-rules">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="rules-section">
+            <h3>🌱 Tarihçe ve Felsefi Semboller</h3>
+            <p>Mangala, kökleri binlerce yıl öncesine dayanan geleneksel bir Türk zeka ve strateji oyunudur. Eski dönemlerde eğlencenin yanı sıra kayıt tutma ve strateji geliştirme aracı olarak oynanmıştır:</p>
+            <ul>
+              <li><strong>12 Kuyu (Oyuk/Ev):</strong> Yıldaki 12 ayı sembolize eder.</li>
+              <li><strong>Her Kuyuda 4 Taş:</strong> Ayın 4 haftasını ifade eder (toplam 48 taş).</li>
+              <li><strong>Doğu ve Batı Hazineleri:</strong> Dünyanın iki yakasını ve Doğu-Batı kültürünü simgeler.</li>
+              <li><strong>Tohumlar:</strong> Eski zamanlarda taşlar yerine tohumlar kullanılmış, toprağa tohum ekme ve bereket felsefesi işlenmiştir.</li>
+            </ul>
+          </div>
+
+          <div class="rules-section">
+            <h3>⚖️ Oyunun 4 Temel Kuralı ve Oyun Sonu</h3>
+            
+            <div class="rule-card">
+              <div class="rule-badge">1. KURAL</div>
+              <h4>Taş Dağıtımı & Tek Taş İstisnası</h4>
+              <p>Sırası gelen oyuncu kendi bölgesindeki 6 kuyudan birini seçer ve içindeki tüm taşları alır. <strong>Taşların bir tanesini aldığı kuyuya bırakır</strong> ve kalan taşları saat yönünün tersine (sağa doğru) her kuyuya birer birer dağıtır. <br><em>İstisna:</em> Eğer kuyuda <strong>sadece 1 taş</strong> varsa, kuyuya taş bırakılmaz; o taş doğrudan sağındaki kuyuya geçirilir.</p>
+            </div>
+
+            <div class="rule-card">
+              <div class="rule-badge">2. KURAL</div>
+              <h4>Hazineye İsabet (Ek Hamle)</h4>
+              <p>Dağıtılan <strong>son taş</strong> oyuncunun kendi hazinesine denk gelirse, oyuncu <strong>tekrar oynama hakkı</strong> kazanır. Hamle sırası yine kendisinde kalır.</p>
+            </div>
+
+            <div class="rule-card">
+              <div class="rule-badge">3. KURAL</div>
+              <h4>Rakip Kuyuyu Çift Yapma</h4>
+              <p>Dağıtılan <strong>son taş</strong> rakip bölgedeki bir kuyuya denk gelir ve oradaki toplam taş sayısını <strong>ÇİFT sayı</strong> (2, 4, 6, 8...) yaparsa, oyuncu o kuyudaki tüm taşları alarak kendi hazinesine atar.</p>
+            </div>
+
+            <div class="rule-card">
+              <div class="rule-badge">4. KURAL</div>
+              <h4>Kendi Boş Kuyusu & Karşıyı Kapma</h4>
+              <p>Dağıtılan <strong>son taş</strong> oyuncunun <strong>kendi bölgesindeki BOŞ bir kuyuya</strong> denk gelirse ve bu kuyunun tam karşısındaki rakip kuyuda taş varsa; oyuncu hem kendi boş kuyusundaki bu taşı, hem de karşısındaki rakip kuyunun tüm taşlarını alarak hazinesine katar.</p>
+            </div>
+
+            <div class="rule-card">
+              <div class="rule-badge">OYUN SONU</div>
+              <h4>Bölgeyi Boşaltma & Taşları Süpürme</h4>
+              <p>Kendi bölgesindeki (6 kuyu) tüm taşları ilk bitiren oyuncu, <strong>rakibinin kuyularında kalan tüm taşları da kazanır</strong> ve kendi hazinesine çeker. 25 veya daha fazla taş toplayan oyuncu oyunu kazanır (24-24 berabere biter).</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary" id="btn-understood">Anladım, Oyuna Dön</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Victory / Game Over Modal -->
+    <div id="modal-gameover" class="modal-backdrop hidden">
+      <div class="modal-dialog modal-celebration">
+        <div class="modal-header">
+          <h2 id="go-title">🎉 Oyun Tamamlandı!</h2>
+        </div>
+        <div class="modal-body">
+          <div class="go-scores">
+            <div class="go-player">
+              <span class="go-name">Siz</span>
+              <span class="go-stones" id="go-p1-stones">0</span>
+            </div>
+            <div class="go-vs">VS</div>
+            <div class="go-player">
+              <span class="go-name">Bilgisayar</span>
+              <span class="go-stones" id="go-p2-stones">0</span>
+            </div>
+          </div>
+          <p class="go-message" id="go-message">Tebrikler, muhteşem bir strateji uyguladınız!</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary" id="btn-go-playagain">Yeniden Oyna</button>
+          <button class="btn-secondary" id="btn-go-tutorial">Öğreticiye Göz At</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
